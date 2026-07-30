@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Product, Category, SiteInfo, CakeModel } from '../types';
 import { initialProducts, initialCategories, initialSiteInfo, initialCakeModels } from './initialData';
-
+import { db } from '../firebase';
+import { collection, getDocs, setDoc, doc, deleteDoc } from 'firebase/firestore';
 const STORAGE_KEYS = {
   SITE_INFO: 'parasakthi_bakery_site_info_v1',
   CATEGORIES: 'parasakthi_bakery_categories_v1',
