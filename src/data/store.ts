@@ -166,7 +166,24 @@ const FIRESTORE_COLLECTIONS = {
       setProductsState(updated);
     },
 
-    saveCakeModel: (model: CakeModel) => {
+    saveCakeModel: async (model: CakeModel) => {
+  try {
+    await setDoc(
+      doc(db, FIRESTORE_COLLECTIONS.cakeModels, model.id),
+      model
+    );
+
+    const current = bakeryStore.getCakeModels();
+    const existing = current.filter(m => m.id !== model.id);
+
+    const updated = [model, ...existing];
+
+    setCakeModelsState(updated);
+
+  } catch (error) {
+    console.error("Cake model save error:", error);
+  }
+},
       const current = bakeryStore.getCakeModels();
       const existingIdx = current.findIndex(m => m.id === model.id);
       let updated: CakeModel[];
