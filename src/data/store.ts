@@ -154,13 +154,22 @@ const FIRESTORE_COLLECTIONS = {
     console.error("Product save error:", error);
   }
 },
+deleteProduct: async (productId: string) => {
+  try {
+    await deleteDoc(
+      doc(db, FIRESTORE_COLLECTIONS.products, productId)
+    );
 
-    deleteProduct: (productId: string) => {
-      const current = bakeryStore.getProducts();
-      const updated = current.filter(p => p.id !== productId);
-      bakeryStore.setProducts(updated);
-      setProductsState(updated);
-    },
+    const current = bakeryStore.getProducts();
+    const updated = current.filter(p => p.id !== productId);
+
+    setProductsState(updated);
+
+  } catch (error) {
+    console.error("Product delete error:", error);
+  }
+},
+    
 
     toggleProductVisibility: (productId: string) => {
       const current = bakeryStore.getProducts();
