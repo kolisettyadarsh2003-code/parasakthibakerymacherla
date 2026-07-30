@@ -127,19 +127,24 @@ const FIRESTORE_COLLECTIONS = {
       setSiteInfoState(info);
     },
 
-    saveProduct: (product: Product) => {
-      const current = bakeryStore.getProducts();
-      const existingIdx = current.findIndex(p => p.id === product.id);
-      let updated: Product[];
-      if (existingIdx >= 0) {
-        updated = [...current];
-        updated[existingIdx] = product;
-      } else {
-        updated = [product, ...current];
-      }
-      bakeryStore.setProducts(updated);
-      setProductsState(updated);
-    },
+    saveProduct: async (product: Product) => {
+  try {
+    await setDoc(
+      doc(db, FIRESTORE_COLLECTIONS.products, product.id),
+      product
+    );
+
+    const current = bakeryStore.getProducts();
+    const existing = current.filter(p => p.id !== product.id);
+
+    const updated = [product, ...existing];
+
+    setProductsState(updated);
+
+  } catch (error) {
+    console.error("Product save error:", error);
+  }
+},
 
     deleteProduct: (productId: string) => {
       const current = bakeryStore.getProducts();
