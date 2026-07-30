@@ -126,8 +126,77 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
     }
   };
 
-  // Image Upload Handler (Supports JPG, PNG, WEBP, HEIC via canvas compression)
-  const handleImageFiles = async (files: FileList | File[], isForCakeModel = false) => {
+// Image Upload Handler - Cloudinary Upload
+const handleImageFiles = async (
+  files: FileList | File[],
+  isForCakeModel = false
+) => {
+  if (!files || files.length === 0) return;
+
+  setIsUploading(true);
+  setUploadStatus('Uploading images...');
+
+  try {
+    const uploadedUrls: string[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append(
+        'upload_preset',
+        'parasakthi_uploads'
+      );
+
+      const response = await fetch(
+        'https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload',
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.secure_url) {
+        uploadedUrls.push(data.secure_url);
+      }
+    }
+
+    if (isForCakeModel && editingCakeModel) {
+      setEditingCakeModel({
+        ...editingCakeModel,
+        images: [
+          ...(editingCakeModel.images || []),
+          ...uploadedUrls,
+        ],
+      });
+    } else {
+      setProductImages((prev) => [
+        ...prev,
+        ...uploadedUrls,
+      ]);
+    }
+
+    setUploadStatus(
+      `Successfully uploaded ${uploadedUrls.length} image(s)!`
+    );
+
+  } catch (error) {
+    console.error(
+      "Cloudinary upload error:",
+      error
+    );
+
+    setUploadStatus(
+      "Image upload failed"
+    );
+
+  } finally {
+    setIsUploading(false);
+  }
+};
     if (!files || files.length === 0) return;
     setIsUploading(true);
     setUploadStatus('Compressing & optimizing images...');
