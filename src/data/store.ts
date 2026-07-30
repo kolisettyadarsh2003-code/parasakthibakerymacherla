@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Product, Category, SiteInfo, CakeModel } from '../types';
 import { initialProducts, initialCategories, initialSiteInfo, initialCakeModels } from './initialData';
+
 import { db } from '../firebase';
 import { collection, getDocs, setDoc, doc, deleteDoc } from 'firebase/firestore';
 const STORAGE_KEYS = {
@@ -67,6 +68,13 @@ export const bakeryStore = {
 
 // Custom React Hook for live UI updates
 export function useBakeryStore() {
+const FIRESTORE_COLLECTIONS = {
+  products: 'products',
+  categories: 'categories',
+  cakeModels: 'cakeModels',
+  siteInfo: 'siteInfo',
+};
+  
   const [siteInfo, setSiteInfoState] = useState<SiteInfo>(bakeryStore.getSiteInfo());
   const [categories, setCategoriesState] = useState<Category[]>(bakeryStore.getCategories());
   const [products, setProductsState] = useState<Product[]>(bakeryStore.getProducts());
