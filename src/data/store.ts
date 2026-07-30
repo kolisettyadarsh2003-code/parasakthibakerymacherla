@@ -215,7 +215,21 @@ deleteProduct: async (productId: string) => {
       setCakeModelsState(updated);
     },
 
-    deleteCakeModel: (modelId: string) => {
+    deleteCakeModel: async (modelId: string) => {
+  try {
+    await deleteDoc(
+      doc(db, FIRESTORE_COLLECTIONS.cakeModels, modelId)
+    );
+
+    const current = bakeryStore.getCakeModels();
+    const updated = current.filter(m => m.id !== modelId);
+
+    setCakeModelsState(updated);
+
+  } catch (error) {
+    console.error("Cake model delete error:", error);
+  }
+},
       const current = bakeryStore.getCakeModels();
       const updated = current.filter(m => m.id !== modelId);
       bakeryStore.setCakeModels(updated);
