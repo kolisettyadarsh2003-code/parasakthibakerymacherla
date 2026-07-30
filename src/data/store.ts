@@ -1,282 +1,412 @@
 import { useState, useEffect } from 'react';
 import { Product, Category, SiteInfo, CakeModel } from '../types';
-import { initialProducts, initialCategories, initialSiteInfo, initialCakeModels } from './initialData';
+import {
+  initialProducts,
+  initialCategories,
+  initialSiteInfo,
+  initialCakeModels,
+} from './initialData';
 
 import { db } from '../firebase';
-import { collection, getDocs, setDoc, doc, deleteDoc } from 'firebase/firestore';
-const STORAGE_KEYS = {
-  SITE_INFO: 'parasakthi_bakery_site_info_v1',
-  CATEGORIES: 'parasakthi_bakery_categories_v1',
-  PRODUCTS: 'parasakthi_bakery_products_v1',
-  CAKE_MODELS: 'parasakthi_bakery_cake_models_v1',
-};
+import {
+  collection,
+  getDocs,
+  setDoc,
+  doc,
+  deleteDoc,
+} from 'firebase/firestore';
 
-// Helper to safely parse local storage
-function getStoredData<T>(key: string, fallback: T): T {
-  try {
-    const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : fallback;
-  } catch (err) {
-    console.error(`Error reading ${key} from localStorage:`, err);
-    return fallback;
-  }
-}
-
-function setStoredData<T>(key: string, value: T): void {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    // Dispatch custom event to sync tabs or state
-    window.dispatchEvent(new CustomEvent('parasakthi_store_updated', { detail: { key } }));
-  } catch (err) {
-    console.error(`Error writing ${key} to localStorage:`, err);
-  }
-}
-
-// Global state getters and setters
-export const bakeryStore = {
-  getSiteInfo: (): SiteInfo => {
-    const stored = getStoredData(STORAGE_KEYS.SITE_INFO, initialSiteInfo);
-    return { ...initialSiteInfo, ...stored };
-  },
-  setSiteInfo: (info: SiteInfo) => setStoredData(STORAGE_KEYS.SITE_INFO, info),
-
-  getCategories: (): Category[] => {
-    const cats = getStoredData(STORAGE_KEYS.CATEGORIES, initialCategories);
-    return cats.sort((a, b) => a.sortOrder - b.sortOrder);
-  },
-  setCategories: (cats: Category[]) => setStoredData(STORAGE_KEYS.CATEGORIES, cats),
-
-  getProducts: (): Product[] => {
-    const prods = getStoredData(STORAGE_KEYS.PRODUCTS, initialProducts);
-    return prods.sort((a, b) => a.sortOrder - b.sortOrder);
-  },
-  setProducts: (prods: Product[]) => setStoredData(STORAGE_KEYS.PRODUCTS, prods),
-
-  getCakeModels: (): CakeModel[] => {
-    return getStoredData(STORAGE_KEYS.CAKE_MODELS, initialCakeModels);
-  },
-  setCakeModels: (models: CakeModel[]) => setStoredData(STORAGE_KEYS.CAKE_MODELS, models),
-
-  resetToDefaults: () => {
-    localStorage.removeItem(STORAGE_KEYS.SITE_INFO);
-    localStorage.removeItem(STORAGE_KEYS.CATEGORIES);
-    localStorage.removeItem(STORAGE_KEYS.PRODUCTS);
-    localStorage.removeItem(STORAGE_KEYS.CAKE_MODELS);
-    window.dispatchEvent(new CustomEvent('parasakthi_store_updated', { detail: { key: 'all' } }));
-  }
-};
-
-// Custom React Hook for live UI updates
-export function useBakeryStore() {
 const FIRESTORE_COLLECTIONS = {
   products: 'products',
   categories: 'categories',
   cakeModels: 'cakeModels',
   siteInfo: 'siteInfo',
 };
-  
-  const [siteInfo, setSiteInfoState] = useState<SiteInfo>(bakeryStore.getSiteInfo());
-  const [categories, setCategoriesState] = useState<Category[]>(bakeryStore.getCategories());
-  const [products, setProductsState] = useState<Product[]>(bakeryStore.getProducts());
-  const [cakeModels, setCakeModelsState] = useState<CakeModel[]>(bakeryStore.getCakeModels());
 
-  const refreshAll = async () => {
-  try {
-    const productsSnap = await getDocs(collection(db, FIRESTORE_COLLECTIONS.products));
-    const productsData = productsSnap.docs.map(doc => doc.data() as Product);
+export const bakeryStore = {
+  getSiteInfo: (): SiteInfo => initialSiteInfo,
 
-    const categoriesSnap = await getDocs(collection(db, FIRESTORE_COLLECTIONS.categories));
-    const categoriesData = categoriesSnap.docs.map(doc => doc.data() as Category);
+  getCategories: (): Category[] => initialCategories,
 
-    const cakesSnap = await getDocs(collection(db, FIRESTORE_COLLECTIONS.cakeModels));
-    const cakesData = cakesSnap.docs.map(doc => doc.data() as CakeModel);
+  getProducts: (): Product[] => initialProducts,
 
-    const siteSnap = await getDocs(collection(db, FIRESTORE_COLLECTIONS.siteInfo));
-    const siteData = siteSnap.docs[0]?.data() as SiteInfo;
+  getCakeModels: (): CakeModel[] => initialCakeModels,
 
-    setProductsState(productsData.length ? productsData : initialProducts);
-    setCategoriesState(categoriesData.length ? categoriesData : initialCategories);
-    setCakeModelsState(cakesData.length ? cakesData : initialCakeModels);
-    setSiteInfoState(siteData || initialSiteInfo);
-
-  } catch (error) {
-    console.error("Firestore loading error:", error);
-  }
+  resetToDefaults: () => {
+    window.dispatchEvent(
+      new CustomEvent('parasakthi_store_updated', {
+        detail: { key: 'all' },
+      })
+    );
+  },
 };
 
+export function useBakeryStore() {
+  const [siteInfo, setSiteInfoState] =
+    useState<SiteInfo>(initialSiteInfo);
+
+  const [categories, setCategoriesState] =
+    useState<Category[]>(initialCategories);
+
+  const [products, setProductsState] =
+    useState<Product[]>(initialProducts);
+
+  const [cakeModels, setCakeModelsState] =
+    useState<CakeModel[]>(initialCakeModels);
+
+
+  const refreshAll = async () => {
+    try {
+      const productsSnap = await getDocs(
+        collection(db, FIRESTORE_COLLECTIONS.products)
+      );
+
+      const productsData = productsSnap.docs.map(
+        (item) => item.data() as Product
+      );
+
+
+      const categoriesSnap = await getDocs(
+        collection(db, FIRESTORE_COLLECTIONS.categories)
+      );
+
+      const categoriesData = categoriesSnap.docs.map(
+        (item) => item.data() as Category
+      );
+
+
+      const cakesSnap = await getDocs(
+        collection(db, FIRESTORE_COLLECTIONS.cakeModels)
+      );
+
+      const cakesData = cakesSnap.docs.map(
+        (item) => item.data() as CakeModel
+      );
+
+
+      const siteSnap = await getDocs(
+        collection(db, FIRESTORE_COLLECTIONS.siteInfo)
+      );
+
+      const siteData =
+        siteSnap.docs[0]?.data() as SiteInfo | undefined;
+
+
+      setProductsState(
+        productsData.length ? productsData : initialProducts
+      );
+
+      setCategoriesState(
+        categoriesData.length ? categoriesData : initialCategories
+      );
+
+      setCakeModelsState(
+        cakesData.length ? cakesData : initialCakeModels
+      );
+
+      setSiteInfoState(
+        siteData || initialSiteInfo
+      );
+
+    } catch (error) {
+      console.error(
+        "Firestore loading error:",
+        error
+      );
+    }
+  };
+
+
   useEffect(() => {
-    const handleUpdate = () => refreshAll();
-    window.addEventListener('parasakthi_store_updated', handleUpdate);
-    window.addEventListener('storage', handleUpdate);
+    refreshAll();
+
+    const handler = () => {
+      refreshAll();
+    };
+
+    window.addEventListener(
+      'parasakthi_store_updated',
+      handler
+    );
 
     return () => {
-      window.removeEventListener('parasakthi_store_updated', handleUpdate);
-      window.removeEventListener('storage', handleUpdate);
+      window.removeEventListener(
+        'parasakthi_store_updated',
+        handler
+      );
     };
-  }, []);
 
-  return {
+  }, []);  return {
     siteInfo,
     categories,
     products,
     cakeModels,
-    
-    // Actions
+
+
     updateSiteInfo: async (info: SiteInfo) => {
-  try {
-    await setDoc(
-      doc(db, FIRESTORE_COLLECTIONS.siteInfo, "main"),
-      info
-    );
+      try {
+        await setDoc(
+          doc(
+            db,
+            FIRESTORE_COLLECTIONS.siteInfo,
+            "main"
+          ),
+          info
+        );
 
-    setSiteInfoState(info);
+        setSiteInfoState(info);
 
-  } catch (error) {
-    console.error("Site info save error:", error);
-  }
-},
+      } catch (error) {
+        console.error(
+          "Site info save error:",
+          error
+        );
+      }
+    },
+
 
     saveProduct: async (product: Product) => {
-  try {
-    await setDoc(
-      doc(db, FIRESTORE_COLLECTIONS.products, product.id),
-      product
-    );
+      try {
+        await setDoc(
+          doc(
+            db,
+            FIRESTORE_COLLECTIONS.products,
+            product.id
+          ),
+          product
+        );
 
-    const current = bakeryStore.getProducts();
-    const existing = current.filter(p => p.id !== product.id);
+        setProductsState((prev) => {
+          const filtered = prev.filter(
+            (p) => p.id !== product.id
+          );
 
-    const updated = [product, ...existing];
+          return [product, ...filtered];
+        });
 
-    setProductsState(updated);
-
-  } catch (error) {
-    console.error("Product save error:", error);
-  }
-},
-deleteProduct: async (productId: string) => {
-  try {
-    await deleteDoc(
-      doc(db, FIRESTORE_COLLECTIONS.products, productId)
-    );
-
-    const current = bakeryStore.getProducts();
-    const updated = current.filter(p => p.id !== productId);
-
-    setProductsState(updated);
-
-  } catch (error) {
-    console.error("Product delete error:", error);
-  }
-},
-    
-
-    toggleProductVisibility: (productId: string) => {
-      const current = bakeryStore.getProducts();
-      const updated = current.map(p => p.id === productId ? { ...p, hidden: !p.hidden } : p);
-      bakeryStore.setProducts(updated);
-      setProductsState(updated);
-    },
-
-    reorderProducts: (reordered: Product[]) => {
-      const updated = reordered.map((p, idx) => ({ ...p, sortOrder: idx + 1 }));
-      bakeryStore.setProducts(updated);
-      setProductsState(updated);
-    },
-
-    saveCakeModel: async (model: CakeModel) => {
-  try {
-    await setDoc(
-      doc(db, FIRESTORE_COLLECTIONS.cakeModels, model.id),
-      model
-    );
-
-    const current = bakeryStore.getCakeModels();
-    const existing = current.filter(m => m.id !== model.id);
-
-    const updated = [model, ...existing];
-
-    setCakeModelsState(updated);
-
-  } catch (error) {
-    console.error("Cake model save error:", error);
-  }
-},
-      const current = bakeryStore.getCakeModels();
-      const existingIdx = current.findIndex(m => m.id === model.id);
-      let updated: CakeModel[];
-      if (existingIdx >= 0) {
-        updated = [...current];
-        updated[existingIdx] = model;
-      } else {
-        updated = [model, ...current];
+      } catch (error) {
+        console.error(
+          "Product save error:",
+          error
+        );
       }
-      bakeryStore.setCakeModels(updated);
-      setCakeModelsState(updated);
     },
 
-    deleteCakeModel: async (modelId: string) => {
-  try {
-    await deleteDoc(
-      doc(db, FIRESTORE_COLLECTIONS.cakeModels, modelId)
-    );
 
-    const current = bakeryStore.getCakeModels();
-    const updated = current.filter(m => m.id !== modelId);
+    deleteProduct: async (productId: string) => {
+      try {
+        await deleteDoc(
+          doc(
+            db,
+            FIRESTORE_COLLECTIONS.products,
+            productId
+          )
+        );
 
-    setCakeModelsState(updated);
+        setProductsState((prev) =>
+          prev.filter(
+            (p) => p.id !== productId
+          )
+        );
 
-  } catch (error) {
-    console.error("Cake model delete error:", error);
-  }
-},
-      const current = bakeryStore.getCakeModels();
-      const updated = current.filter(m => m.id !== modelId);
-      bakeryStore.setCakeModels(updated);
-      setCakeModelsState(updated);
-    },
-
-    saveCategory: async (cat: Category) => {
-  try {
-    await setDoc(
-      doc(db, FIRESTORE_COLLECTIONS.categories, cat.id),
-      cat
-    );
-
-    const current = bakeryStore.getCategories();
-    const existing = current.filter(c => c.id !== cat.id);
-
-    const updated = [...existing, cat];
-
-    setCategoriesState(updated);
-
-  } catch (error) {
-    console.error("Category save error:", error);
-  }
-},
-      const current = bakeryStore.getCategories();
-      const existingIdx = current.findIndex(c => c.id === cat.id);
-      let updated: Category[];
-      if (existingIdx >= 0) {
-        updated = [...current];
-        updated[existingIdx] = cat;
-      } else {
-        updated = [...current, cat];
+      } catch (error) {
+        console.error(
+          "Product delete error:",
+          error
+        );
       }
-      bakeryStore.setCategories(updated);
-      setCategoriesState(updated);
     },
 
-    deleteCategory: (catId: string) => {
-      const current = bakeryStore.getCategories();
-      const updated = current.filter(c => c.id !== catId);
-      bakeryStore.setCategories(updated);
-      setCategoriesState(updated);
+
+    toggleProductVisibility: async (
+      productId: string
+    ) => {
+      try {
+        const updated = products.map((p) =>
+          p.id === productId
+            ? {
+                ...p,
+                hidden: !p.hidden,
+              }
+            : p
+        );
+
+
+        for (const product of updated) {
+          await setDoc(
+            doc(
+              db,
+              FIRESTORE_COLLECTIONS.products,
+              product.id
+            ),
+            product
+          );
+        }
+
+
+        setProductsState(updated);
+
+      } catch (error) {
+        console.error(
+          "Visibility update error:",
+          error
+        );
+      }
     },
+
+
+    reorderProducts: async (
+      reordered: Product[]
+    ) => {
+      try {
+        const updated = reordered.map(
+          (p, index) => ({
+            ...p,
+            sortOrder: index + 1,
+          })
+        );
+
+
+        for (const product of updated) {
+          await setDoc(
+            doc(
+              db,
+              FIRESTORE_COLLECTIONS.products,
+              product.id
+            ),
+            product
+          );
+        }
+
+
+        setProductsState(updated);
+
+      } catch (error) {
+        console.error(
+          "Reorder error:",
+          error
+        );
+      }
+    },
+
+
+    saveCakeModel: async (
+      model: CakeModel
+    ) => {
+      try {
+        await setDoc(
+          doc(
+            db,
+            FIRESTORE_COLLECTIONS.cakeModels,
+            model.id
+          ),
+          model
+        );
+
+        setCakeModelsState((prev) => {
+          const filtered = prev.filter(
+            (m) => m.id !== model.id
+          );
+
+          return [model, ...filtered];
+        });
+
+      } catch (error) {
+        console.error(
+          "Cake save error:",
+          error
+        );
+      }
+    },
+
+
+    deleteCakeModel: async (
+      modelId: string
+    ) => {
+      try {
+        await deleteDoc(
+          doc(
+            db,
+            FIRESTORE_COLLECTIONS.cakeModels,
+            modelId
+          )
+        );
+
+        setCakeModelsState((prev) =>
+          prev.filter(
+            (m) => m.id !== modelId
+          )
+        );
+
+      } catch (error) {
+        console.error(
+          "Cake delete error:",
+          error
+        );
+      }
+    },
+
+
+    saveCategory: async (
+      cat: Category
+    ) => {
+      try {
+        await setDoc(
+          doc(
+            db,
+            FIRESTORE_COLLECTIONS.categories,
+            cat.id
+          ),
+          cat
+        );
+
+        setCategoriesState((prev) => {
+          const filtered = prev.filter(
+            (c) => c.id !== cat.id
+          );
+
+          return [...filtered, cat];
+        });
+
+      } catch (error) {
+        console.error(
+          "Category save error:",
+          error
+        );
+      }
+    },
+
+
+    deleteCategory: async (
+      catId: string
+    ) => {
+      try {
+        await deleteDoc(
+          doc(
+            db,
+            FIRESTORE_COLLECTIONS.categories,
+            catId
+          )
+        );
+
+        setCategoriesState((prev) =>
+          prev.filter(
+            (c) => c.id !== catId
+          )
+        );
+
+      } catch (error) {
+        console.error(
+          "Category delete error:",
+          error
+        );
+      }
+    },
+
 
     resetAll: () => {
       bakeryStore.resetToDefaults();
       refreshAll();
-    }
+    },
   };
 }
