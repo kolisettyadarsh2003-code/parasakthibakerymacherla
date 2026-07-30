@@ -204,7 +204,24 @@ const FIRESTORE_COLLECTIONS = {
       setCakeModelsState(updated);
     },
 
-    saveCategory: (cat: Category) => {
+    saveCategory: async (cat: Category) => {
+  try {
+    await setDoc(
+      doc(db, FIRESTORE_COLLECTIONS.categories, cat.id),
+      cat
+    );
+
+    const current = bakeryStore.getCategories();
+    const existing = current.filter(c => c.id !== cat.id);
+
+    const updated = [...existing, cat];
+
+    setCategoriesState(updated);
+
+  } catch (error) {
+    console.error("Category save error:", error);
+  }
+},
       const current = bakeryStore.getCategories();
       const existingIdx = current.findIndex(c => c.id === cat.id);
       let updated: Category[];
