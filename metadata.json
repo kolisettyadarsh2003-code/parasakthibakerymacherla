@@ -1,0 +1,6 @@
+{
+  "name": "Parasakthi Bakery",
+  "description": "A modern, elegant, premium visual showcase website and catalogue for Parasakthi Bakery - Macherla.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

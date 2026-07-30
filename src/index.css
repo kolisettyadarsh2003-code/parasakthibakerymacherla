@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Montserrat', 'Plus Jakarta Sans', sans-serif;
+  }
+  
+  h1, h2, h3, .font-serif, .font-serif-display {
+    font-family: 'Playfair Display', 'Cormorant Garamond', serif;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FCF9F2;
+}
+::-webkit-scrollbar-thumb {
+  background: #C5A059;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #001030;
+}
+
+/* Professional Polish theme utilities */
+.gold-gradient {
+  background: linear-gradient(135deg, #D4AF37 0%, #C5A059 100%);
+}
+
+.navy-gradient {
+  background: linear-gradient(180deg, #002366 0%, #001030 100%);
+}
+
+.card-shadow {
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+}
+
+.gold-border {
+  border-color: #D4AF37;
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C5A059 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-gradient-bg {
+  background: linear-gradient(135deg, #D4AF37 0%, #E2C258 50%, #C5A059 100%);
+}
+
+.royal-gradient-bg {
+  background: linear-gradient(180deg, #002366 0%, #001030 100%);
+}
+
