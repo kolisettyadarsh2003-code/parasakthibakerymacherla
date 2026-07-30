@@ -122,10 +122,19 @@ const FIRESTORE_COLLECTIONS = {
     cakeModels,
     
     // Actions
-    updateSiteInfo: (info: SiteInfo) => {
-      bakeryStore.setSiteInfo(info);
-      setSiteInfoState(info);
-    },
+    updateSiteInfo: async (info: SiteInfo) => {
+  try {
+    await setDoc(
+      doc(db, FIRESTORE_COLLECTIONS.siteInfo, "main"),
+      info
+    );
+
+    setSiteInfoState(info);
+
+  } catch (error) {
+    console.error("Site info save error:", error);
+  }
+},
 
     saveProduct: async (product: Product) => {
   try {
