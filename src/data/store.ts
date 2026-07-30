@@ -80,12 +80,29 @@ const FIRESTORE_COLLECTIONS = {
   const [products, setProductsState] = useState<Product[]>(bakeryStore.getProducts());
   const [cakeModels, setCakeModelsState] = useState<CakeModel[]>(bakeryStore.getCakeModels());
 
-  const refreshAll = () => {
-    setSiteInfoState(bakeryStore.getSiteInfo());
-    setCategoriesState(bakeryStore.getCategories());
-    setProductsState(bakeryStore.getProducts());
-    setCakeModelsState(bakeryStore.getCakeModels());
-  };
+  const refreshAll = async () => {
+  try {
+    const productsSnap = await getDocs(collection(db, FIRESTORE_COLLECTIONS.products));
+    const productsData = productsSnap.docs.map(doc => doc.data() as Product);
+
+    const categoriesSnap = await getDocs(collection(db, FIRESTORE_COLLECTIONS.categories));
+    const categoriesData = categoriesSnap.docs.map(doc => doc.data() as Category);
+
+    const cakesSnap = await getDocs(collection(db, FIRESTORE_COLLECTIONS.cakeModels));
+    const cakesData = cakesSnap.docs.map(doc => doc.data() as CakeModel);
+
+    const siteSnap = await getDocs(collection(db, FIRESTORE_COLLECTIONS.siteInfo));
+    const siteData = siteSnap.docs[0]?.data() as SiteInfo;
+
+    setProductsState(productsData.length ? productsData : initialProducts);
+    setCategoriesState(categoriesData.length ? categoriesData : initialCategories);
+    setCakeModelsState(cakesData.length ? cakesData : initialCakeModels);
+    setSiteInfoState(siteData || initialSiteInfo);
+
+  } catch (error) {
+    console.error("Firestore loading error:", error);
+  }
+};
 
   useEffect(() => {
     const handleUpdate = () => refreshAll();
