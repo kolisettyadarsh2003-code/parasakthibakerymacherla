@@ -150,7 +150,7 @@ const handleImageFiles = async (
       );
 
       const response = await fetch(
-        'https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload',
+        'https://api.cloudinary.com/v1_1/parasakthi_uploads/image/upload',
         {
           method: 'POST',
           body: formData,
