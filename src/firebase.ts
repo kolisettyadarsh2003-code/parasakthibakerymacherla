@@ -12,8 +12,8 @@ const firebaseConfig = {
   projectId: "parasakthi-bakery",
   storageBucket: "parasakthi-bakery.firebasestorage.app",
   messagingSenderId: "298622831699",
-  appId: "1:298622831699:web:54fd746b6bcece52110aa6",
-  measurementId: "G-3QKDJG1PH8"
+  appId: "1:298622831699:web:c225b10c2d85dd8c110aa6",
+  measurementId: "G-WEXF3D23M7"
 };
 
 // Initialize Firebase
